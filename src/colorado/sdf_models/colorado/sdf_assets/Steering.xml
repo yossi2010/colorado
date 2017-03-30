@@ -1,0 +1,78 @@
+		
+<!-------------------------->
+<!--steering setup-->
+<link name="steering_left_1">
+  <pose>1.79660 1.04 0.48924 0 0 0</pose>
+  <inertial>
+    <inertia>
+      <ixx>0.01</ixx>
+      <ixy>0.0</ixy>
+      <ixz>0.0</ixz>
+      <iyy>0.01</iyy>
+      <iyz>0.0</iyz>
+      <izz>0.01</izz>
+    </inertia>
+    <mass>20</mass>
+  </inertial>
+  <visual name='visual'>
+    <pose>0 0 0 0 0 3.14159265359</pose>
+    <geometry>
+      <cylinder>
+        <radius>0.1</radius>
+        <length>0.3</length>
+      </cylinder>
+    </geometry>
+  </visual>
+</link>
+<joint name="steering_joint_left_1" type="revolute">
+  <parent>suspension_left_1</parent>
+  <child>steering_left_1</child>
+  <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+  <axis> <dynamics><damping>1</damping></dynamics>
+    <limit>
+      <lower>-0.61</lower>
+      <upper>0.61</upper>
+    </limit>
+    <xyz>0 0 1</xyz>
+  </axis>
+</joint>
+
+<link name="steering_right_1">
+  <pose>1.79660 -1.04 0.48924 0 0 0</pose>
+  <inertial>
+    <inertia>
+      <ixx>0.01</ixx>
+      <ixy>0.0</ixy>
+      <ixz>0.0</ixz>
+      <iyy>0.01</iyy>
+      <iyz>0.0</iyz>
+      <izz>0.01</izz>
+    </inertia>
+    <mass>20</mass>
+  </inertial>
+  <visual name='visual'>
+    <pose>0 0 0 0 0 0</pose>
+    <geometry>
+      <cylinder>
+        <radius>0.1</radius>
+        <length>0.3</length>
+      </cylinder>
+    </geometry>
+  </visual>
+</link>
+<joint name="steering_joint_right_1" type="revolute">
+  <parent>suspension_right_1</parent>
+  <child>steering_right_1</child>
+  <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+  <axis> <dynamics><damping>1</damping></dynamics>
+    <limit>
+      <lower>-0.61</lower>
+      <upper>0.61</upper>
+    </limit>
+    <xyz>0 0 1</xyz>
+  </axis>
+</joint>
+
+
+<!--End of steering setup-->
+<!-------------------------->
