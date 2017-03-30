@@ -3,11 +3,11 @@
 <sdf version='1.4'>
 	<model name='colorado'>
 		<link name='body'>
-			<pose>0 0  0 0 0</pose>
+			<pose>0 0 0 0 0 0</pose>
 			<gravity>1</gravity>
 			<self_collide>1</self_collide>
 			<inertial>
-				<pose>0.00 0.00 0.5 0 0 0</pose>
+				<pose>0.00 0.00 1 0 0 0</pose>
 				<mass>2000</mass>
 				<inertia>
 					<ixx>500</ixx>
@@ -30,7 +30,7 @@
 				<pose>1.65953 0 1.20715 0 0.09472 0</pose>
 				<geometry>
 					<box>
-						<size>1.622 2.414 0.22</size>
+						<size>1.622 2.414 0.1</size>
 					</box>
 				</geometry>
 			</collision>
@@ -65,7 +65,7 @@
 <!--Suspension setup-->
 <!--Front left wheel-->
 <link name="suspension_main_left_1">
-<pose>1.79660 0.27504 0.65450 1.09557 0 0</pose>
+<pose>1.6 0.27504 0.65450 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -77,18 +77,9 @@
     </inertia>
      <mass>50</mass>
   </inertial>
-  <visual name='visual'>
-    <pose>0 0 -0.35 0 0 0</pose>
-    <geometry>
-      <cylinder>
-        <radius>0.05</radius>
-        <length>0.7</length>
-      </cylinder>
-    </geometry>
-  </visual>
 </link>
 <link name="suspension_holder_left_1">
-<pose>1.79660 0.3666 0.8654 1.09558 0 0</pose>
+<pose>1.6 0.3666 0.8654 1.09558 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -104,14 +95,15 @@
     <pose>0 0 -0.25 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.05</radius>
+        <radius>0.025</radius>
         <length>0.5</length>
       </cylinder>
     </geometry>
+    <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse><specular>1 1 1 1</specular><emissive>0 0 0 1</emissive></material>
   </visual>
 </link>
 <link name="suspension_left_1">
-<pose>1.79660 1.04 0.48924 0 0 0</pose>
+<pose>1.6 0.9 0.391 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -127,8 +119,8 @@
     <pose>0 0 0 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.05</radius>
-        <length>0.3</length>
+        <radius>0.025</radius>
+        <length>0.1</length>
       </cylinder>
     </geometry>
   </visual>
@@ -138,7 +130,7 @@
   <child>suspension_main_left_1</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <joint name="suspension_holder_joint_left_1" type="revolute">
@@ -146,7 +138,7 @@
   <child>suspension_holder_left_1</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <joint name="suspension_holder_wheel_joint_left_1" type="revolute">
@@ -154,7 +146,11 @@
   <child>suspension_left_1</child>
   <pose>0.0 0.0 0.21 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
+    <limit>
+      <lower>-0.5</lower>
+      <upper>0.5</upper>
+    </limit>
   </axis><!--Front left wheel-->
 </joint>
 <joint name="suspension_main_wheel_joint_left_1" type="revolute">
@@ -162,12 +158,12 @@
   <child>suspension_left_1</child>
   <pose>0.0 0.0 -0.11 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <!--Back left wheel-->
 <link name="suspension_main_left_2">
-<pose>-1.79660 0.27504 0.65450 1.09557 0 0</pose>
+<pose>-1.6 0.27504 0.65450 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -179,18 +175,10 @@
     </inertia>
      <mass>50</mass>
   </inertial>
-  <visual name='visual'>
-    <pose>0 0 -0.35 0 0 0</pose>
-    <geometry>
-      <cylinder>
-        <radius>0.05</radius>
-        <length>0.7</length>
-      </cylinder>
-    </geometry>
-  </visual>
+
 </link>
 <link name="suspension_holder_left_2">
-<pose>-1.79660 0.3666 0.8654 1.09558 0 0</pose>
+<pose>-1.6 0.3666 0.8654 1.09558 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -206,14 +194,15 @@
     <pose>0 0 -0.25 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.05</radius>
+        <radius>0.025</radius>
         <length>0.5</length>
       </cylinder>
     </geometry>
+    <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse><specular>1 1 1 1</specular><emissive>0 0 0 1</emissive></material>
   </visual>
 </link>
 <link name="suspension_left_2">
-<pose>-1.79660 1.04 0.48924 0 0 0</pose>
+<pose>-1.6 0.9 0.391 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -229,8 +218,8 @@
     <pose>0 0 0 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.05</radius>
-        <length>0.3</length>
+        <radius>0.025</radius>
+        <length>0.1</length>
       </cylinder>
     </geometry>
   </visual>
@@ -240,7 +229,7 @@
   <child>suspension_main_left_2</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <joint name="suspension_holder_joint_left_2" type="revolute">
@@ -248,7 +237,7 @@
   <child>suspension_holder_left_2</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <joint name="suspension_holder_holder_wheel_joint_left_2" type="revolute">
@@ -256,7 +245,11 @@
   <child>suspension_left_2</child>
   <pose>0.0 0.0 0.21 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
+    <limit>
+      <lower>-0.5</lower>
+      <upper>0.5</upper>
+    </limit>
   </axis>
 </joint>
 <joint name="suspension_main_wheel_joint_left_2" type="revolute">
@@ -264,12 +257,12 @@
   <child>suspension_left_2</child>
   <pose>0.0 0.0 -0.11 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <!--Front right wheel-->
 <link name="suspension_main_right_1">
-<pose>1.79660 -0.27504 0.65450 -1.09557 0 0</pose>
+<pose>1.6 -0.27504 0.65450 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -281,18 +274,9 @@
     </inertia>
      <mass>50</mass>
   </inertial>
-  <visual name='visual'>
-    <pose>0 0 -0.35 0 0 0</pose>
-    <geometry>
-      <cylinder>
-        <radius>0.05</radius>
-        <length>0.7</length>
-      </cylinder>
-    </geometry>
-  </visual>
 </link>
 <link name="suspension_holder_right_1">
-<pose>1.79660 -0.3666 0.8654 -1.09558 0 0</pose>
+<pose>1.6 -0.3666 0.8654 -1.09558 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -308,14 +292,15 @@
     <pose>0 0 -0.25 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.05</radius>
+        <radius>0.025</radius>
         <length>0.5</length>
       </cylinder>
     </geometry>
+    <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse><specular>1 1 1 1</specular><emissive>0 0 0 1</emissive></material>
   </visual>
 </link>
 <link name="suspension_right_1">
-<pose>1.79660 -1.04 0.48924 0 0 0</pose>
+<pose>1.6 -0.9 0.391 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -331,8 +316,8 @@
     <pose>0 0 0 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.05</radius>
-        <length>0.3</length>
+        <radius>0.025</radius>
+        <length>0.1</length>
       </cylinder>
     </geometry>
   </visual>
@@ -342,7 +327,7 @@
   <child>suspension_main_right_1</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>-1 0 0 </xyz>
+    <xyz>-1 0 0</xyz>
   </axis>
 </joint>
 <joint name="suspension_holder_joint_right_1" type="revolute">
@@ -350,7 +335,7 @@
   <child>suspension_holder_right_1</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <joint name="suspension_holder_wheel_joint_right_1" type="revolute">
@@ -358,7 +343,11 @@
   <child>suspension_right_1</child>
   <pose>0.0 0.0 0.21 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
+    <limit>
+      <lower>-0.5</lower>
+      <upper>0.5</upper>
+    </limit>
   </axis>
 </joint>
 <joint name="suspension_main_wheel_joint_right_1" type="revolute">
@@ -366,12 +355,12 @@
   <child>suspension_right_1</child>
   <pose>0.0 0.0 -0.11 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <!--Back right wheel-->
 <link name="suspension_main_right_2">
-<pose>-1.79660 -0.27504 0.65450 -1.09557 0 0</pose>
+<pose>-1.6 -0.27504 0.65450 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -383,18 +372,9 @@
     </inertia>
      <mass>50</mass>
   </inertial>
-  <visual name='visual'>
-    <pose>0 0 -0.35 0 0 0</pose>
-    <geometry>
-      <cylinder>
-        <radius>0.05</radius>
-        <length>0.7</length>
-      </cylinder>
-    </geometry>
-  </visual>
 </link>
 <link name="suspension_holder_right_2">
-<pose>-1.79660 -0.3666 0.8654 -1.09558 0 0</pose>
+<pose>-1.6 -0.3666 0.8654 -1.09558 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -410,14 +390,15 @@
     <pose>0 0 -0.25 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.05</radius>
+        <radius>0.025</radius>
         <length>0.5</length>
       </cylinder>
     </geometry>
+    <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse><specular>1 1 1 1</specular><emissive>0 0 0 1</emissive></material>
   </visual>
 </link>
 <link name="suspension_right_2">
-<pose>-1.79660 -1.04 0.48924 0 0 0</pose>
+<pose>-1.6 -0.9 0.391 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -433,8 +414,8 @@
     <pose>0 0 0 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.05</radius>
-        <length>0.3</length>
+        <radius>0.025</radius>
+        <length>0.1</length>
       </cylinder>
     </geometry>
   </visual>
@@ -444,7 +425,7 @@
   <child>suspension_main_right_2</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>-1 0 0 </xyz>
+    <xyz>-1 0 0</xyz>
   </axis>
 </joint>
 <joint name="suspension_holder_joint_right_2" type="revolute">
@@ -452,7 +433,7 @@
   <child>suspension_holder_right_2</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <joint name="suspension_holder_wheel_joint_right_2" type="revolute">
@@ -460,7 +441,11 @@
   <child>suspension_right_2</child>
   <pose>0.0 0.0 0.21 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
+    <limit>
+      <lower>-0.5</lower>
+      <upper>0.5</upper>
+    </limit>
   </axis>
 </joint>
 <joint name="suspension_main_wheel_joint_right_2" type="revolute">
@@ -468,7 +453,7 @@
   <child>suspension_right_2</child>
   <pose>0.0 0.0 -0.11 0.0 0.0 0.0</pose>
   <axis>
-    <xyz>1 0 0 </xyz>
+    <xyz>1 0 0</xyz>
   </axis>
 </joint>
 <!--End of suspension setup-->
@@ -476,7 +461,7 @@
 <!-------------------------->
 <!--steering setup-->
 <link name="steering_left_1">
-  <pose>1.79660 1.04 0.48924 0 0 0</pose>
+  <pose>1.6 0.9 0.391 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -486,23 +471,27 @@
       <iyz>0.0</iyz>
       <izz>0.01</izz>
     </inertia>
-    <mass>20</mass>
+    <mass>50</mass>
   </inertial>
   <visual name='visual'>
     <pose>0 0 0 0 0 3.14159265359</pose>
     <geometry>
       <cylinder>
-        <radius>0.1</radius>
+        <radius>0.02</radius>
         <length>0.3</length>
       </cylinder>
     </geometry>
+    <material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse><specular>1 1 1 1</specular><emissive>0 0 0 1</emissive></material>
   </visual>
 </link>
 <joint name="steering_joint_left_1" type="revolute">
   <parent>suspension_left_1</parent>
   <child>steering_left_1</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
-  <axis> <dynamics><damping>1</damping></dynamics>
+  <axis>
+    <dynamics>
+      <damping>1</damping>
+    </dynamics>
     <limit>
       <lower>-0.61</lower>
       <upper>0.61</upper>
@@ -510,9 +499,8 @@
     <xyz>0 0 1</xyz>
   </axis>
 </joint>
-
 <link name="steering_right_1">
-  <pose>1.79660 -1.04 0.48924 0 0 0</pose>
+  <pose>1.6 -0.9 0.391 0 0 0</pose>
   <inertial>
     <inertia>
       <ixx>0.01</ixx>
@@ -522,23 +510,27 @@
       <iyz>0.0</iyz>
       <izz>0.01</izz>
     </inertia>
-    <mass>20</mass>
+    <mass>50</mass>
   </inertial>
   <visual name='visual'>
     <pose>0 0 0 0 0 0</pose>
     <geometry>
       <cylinder>
-        <radius>0.1</radius>
+        <radius>0.02</radius>
         <length>0.3</length>
       </cylinder>
     </geometry>
+    <material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse><specular>1 1 1 1</specular><emissive>0 0 0 1</emissive></material>
   </visual>
 </link>
 <joint name="steering_joint_right_1" type="revolute">
   <parent>suspension_right_1</parent>
   <child>steering_right_1</child>
   <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
-  <axis> <dynamics><damping>1</damping></dynamics>
+  <axis>
+    <dynamics>
+      <damping>1</damping>
+    </dynamics>
     <limit>
       <lower>-0.61</lower>
       <upper>0.61</upper>
@@ -546,66 +538,64 @@
     <xyz>0 0 1</xyz>
   </axis>
 </joint>
-
-
 <!--End of steering setup-->
 <!--------------------------><!-------------------------->
 <!--wheels Setup-->
 <link name='left_wheel_1'>
-	<pose>1.79660 1.04 0.48924 0 0 0</pose>
+	<pose>1.6 0.9 0.391 0 0 0</pose>
 	<inertial>
 		<pose>0 0 0 0 0 0</pose>
 		<mass>80</mass>
 		<inertia>
-			<ixx>15</ixx>
+			<ixx>5.9</ixx>
 			<ixy>0</ixy>
 			<ixz>0</ixz>
-			<iyy>30</iyy>
+			<iyy>9.88</iyy>
 			<iyz>0</iyz>
-			<izz>15</izz>
+			<izz>5.9</izz>
 		</inertia>
 	</inertial>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.07</length>
-				<radius>0.497</radius>
+				<length>0.1</length>
+				<radius>0.388</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 		<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.15</length>
-				<radius>0.495</radius>
+				<length>0.2</length>
+				<radius>0.387</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.3</length>
-				<radius>0.49</radius>
+				<length>0.24</length>
+				<radius>0.385</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.381</length>
-				<radius>0.47</radius>
+				<length>0.254</length>
+				<radius>0.38</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<visual name='left_wheel'>
-		<pose>0 0 0 0 0 3.14159265</pose>
+		<pose>0 0 0 0 0 3.1469265</pose>
 		<geometry>
 			<mesh>
-				<uri>model://../Assets/colorado_right_wheel.dae</uri>
+				<uri>model://../Assets/colorado_wheel.dae</uri>
 			</mesh>
 		</geometry>
 	</visual>
@@ -620,60 +610,60 @@
 	</axis>
 </joint>
 <link name='left_wheel_2'>
-	<pose>-1.79660 1.04 0.48924 0 0 0</pose>
+	<pose>-1.6 0.9 0.391 0 0 0</pose>
 	<inertial>
 		<pose>0 0 0 0 0 0</pose>
 		<mass>80</mass>
 		<inertia>
-			<ixx>15</ixx>
+			<ixx>5.9</ixx>
 			<ixy>0</ixy>
 			<ixz>0</ixz>
-			<iyy>30</iyy>
+			<iyy>9.88</iyy>
 			<iyz>0</iyz>
-			<izz>15</izz>
+			<izz>5.9</izz>
 		</inertia>
 	</inertial>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.07</length>
-				<radius>0.497</radius>
+				<length>0.1</length>
+				<radius>0.388</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 		<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.15</length>
-				<radius>0.495</radius>
+				<length>0.2</length>
+				<radius>0.387</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.3</length>
-				<radius>0.49</radius>
+				<length>0.24</length>
+				<radius>0.385</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.381</length>
-				<radius>0.47</radius>
+				<length>0.254</length>
+				<radius>0.38</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<visual name='left_wheel'>
-		<pose>0 0 0 0 0 3.14159265</pose>
+		<pose>0 0 0 0 0 3.1469265</pose>
 		<geometry>
 			<mesh>
-				<uri>model://../Assets/colorado_right_wheel.dae</uri>
+				<uri>model://../Assets/colorado_wheel.dae</uri>
 			</mesh>
 		</geometry>
 	</visual>
@@ -688,52 +678,52 @@
 	</axis>
 </joint>
 <link name='right_wheel_1'>
-	<pose>1.79660 -1.04 0.48924 0 0 0</pose>
+	<pose>1.6 -0.9 0.391 0 0 0</pose>
 	<inertial>
 		<pose>0 0 0 0 0 0</pose>
 		<mass>80</mass>
 		<inertia>
-			<ixx>15</ixx>
+			<ixx>5.9</ixx>
 			<ixy>0</ixy>
 			<ixz>0</ixz>
-			<iyy>30</iyy>
+			<iyy>9.88</iyy>
 			<iyz>0</iyz>
-			<izz>15</izz>
+			<izz>5.9</izz>
 		</inertia>
 	</inertial>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.07</length>
-				<radius>0.497</radius>
+				<length>0.1</length>
+				<radius>0.388</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 		<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.15</length>
-				<radius>0.495</radius>
+				<length>0.2</length>
+				<radius>0.387</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.3</length>
-				<radius>0.49</radius>
+				<length>0.24</length>
+				<radius>0.385</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.381</length>
-				<radius>0.47</radius>
+				<length>0.254</length>
+				<radius>0.38</radius>
 			</cylinder>
 		</geometry>
 	</collision>
@@ -741,7 +731,7 @@
 		<pose>0 0 0 0 0 0</pose>
 		<geometry>
 			<mesh>
-				<uri>model://../Assets/colorado_right_wheel.dae</uri>
+				<uri>model://../Assets/colorado_wheel.dae</uri>
 			</mesh>
 		</geometry>
 	</visual>
@@ -756,52 +746,52 @@
 	</axis>
 </joint>
 <link name='right_wheel_2'>
-	<pose>-1.79660 -1.04 0.48924 0 0 0</pose>
+	<pose>-1.6 -0.9 0.391 0 0 0</pose>
 	<inertial>
 		<pose>0 0 0 0 0 0</pose>
 		<mass>80</mass>
 		<inertia>
-			<ixx>15</ixx>
+			<ixx>5.9</ixx>
 			<ixy>0</ixy>
 			<ixz>0</ixz>
-			<iyy>30</iyy>
+			<iyy>9.88</iyy>
 			<iyz>0</iyz>
-			<izz>15</izz>
+			<izz>5.9</izz>
 		</inertia>
 	</inertial>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.07</length>
-				<radius>0.497</radius>
+				<length>0.1</length>
+				<radius>0.388</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 		<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.15</length>
-				<radius>0.495</radius>
+				<length>0.2</length>
+				<radius>0.387</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.3</length>
-				<radius>0.49</radius>
+				<length>0.24</length>
+				<radius>0.385</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.381</length>
-				<radius>0.47</radius>
+				<length>0.254</length>
+				<radius>0.38</radius>
 			</cylinder>
 		</geometry>
 	</collision>
@@ -809,7 +799,7 @@
 		<pose>0 0 0 0 0 0</pose>
 		<geometry>
 			<mesh>
-				<uri>model://../Assets/colorado_right_wheel.dae</uri>
+				<uri>model://../Assets/colorado_wheel.dae</uri>
 			</mesh>
 		</geometry>
 	</visual>

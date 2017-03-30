@@ -3,11 +3,11 @@
 <sdf version='1.4'>
 	<model name='colorado'>
 		<link name='body'>
-			<pose>0 0  0 0 0</pose>
+			<pose>0 0 0 0 0 0</pose>
 			<gravity>1</gravity>
 			<self_collide>1</self_collide>
 			<inertial>
-				<pose>0.00 0.00 0.5 0 0 0</pose>
+				<pose>0.00 0.00 1 0 0 0</pose>
 				<mass>2000</mass>
 				<inertia>
 					<ixx>500</ixx>
@@ -55,7 +55,7 @@
 				<geometry>
 					<mesh>
 						<scale>1 1 1</scale>
-						<uri>model://coloradocolorado_body.dae</uri>
+						<uri>model://../Assets/colorado_body.dae</uri>
 					</mesh>
 				</geometry>
 			</visual>

@@ -1,60 +1,60 @@
 <!-------------------------->
 <!--wheels Setup-->
 <link name='left_wheel_1'>
-	<pose>1.79660 1.04 0.48924 0 0 0</pose>
+	<pose>1.6 0.9 0.391 0 0 0</pose>
 	<inertial>
 		<pose>0 0 0 0 0 0</pose>
 		<mass>80</mass>
 		<inertia>
-			<ixx>15</ixx>
+			<ixx>5.9</ixx>
 			<ixy>0</ixy>
 			<ixz>0</ixz>
-			<iyy>30</iyy>
+			<iyy>9.88</iyy>
 			<iyz>0</iyz>
-			<izz>15</izz>
+			<izz>5.9</izz>
 		</inertia>
 	</inertial>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.07</length>
-				<radius>0.497</radius>
+				<length>0.1</length>
+				<radius>0.388</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 		<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.15</length>
-				<radius>0.495</radius>
+				<length>0.2</length>
+				<radius>0.387</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.3</length>
-				<radius>0.49</radius>
+				<length>0.24</length>
+				<radius>0.385</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.381</length>
-				<radius>0.47</radius>
+				<length>0.254</length>
+				<radius>0.38</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<visual name='left_wheel'>
-		<pose>0 0 0 0 0 3.14159265</pose>
+		<pose>0 0 0 0 0 3.1469265</pose>
 		<geometry>
 			<mesh>
-				<uri>model://../Assets/colorado_right_wheel.dae</uri>
+				<uri>model://../Assets/colorado_wheel.dae</uri>
 			</mesh>
 		</geometry>
 	</visual>
@@ -69,60 +69,60 @@
 	</axis>
 </joint>
 <link name='left_wheel_2'>
-	<pose>-1.79660 1.04 0.48924 0 0 0</pose>
+	<pose>-1.6 0.9 0.391 0 0 0</pose>
 	<inertial>
 		<pose>0 0 0 0 0 0</pose>
 		<mass>80</mass>
 		<inertia>
-			<ixx>15</ixx>
+			<ixx>5.9</ixx>
 			<ixy>0</ixy>
 			<ixz>0</ixz>
-			<iyy>30</iyy>
+			<iyy>9.88</iyy>
 			<iyz>0</iyz>
-			<izz>15</izz>
+			<izz>5.9</izz>
 		</inertia>
 	</inertial>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.07</length>
-				<radius>0.497</radius>
+				<length>0.1</length>
+				<radius>0.388</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 		<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.15</length>
-				<radius>0.495</radius>
+				<length>0.2</length>
+				<radius>0.387</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.3</length>
-				<radius>0.49</radius>
+				<length>0.24</length>
+				<radius>0.385</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 -0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.381</length>
-				<radius>0.47</radius>
+				<length>0.254</length>
+				<radius>0.38</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<visual name='left_wheel'>
-		<pose>0 0 0 0 0 3.14159265</pose>
+		<pose>0 0 0 0 0 3.1469265</pose>
 		<geometry>
 			<mesh>
-				<uri>model://../Assets/colorado_right_wheel.dae</uri>
+				<uri>model://../Assets/colorado_wheel.dae</uri>
 			</mesh>
 		</geometry>
 	</visual>
@@ -137,52 +137,52 @@
 	</axis>
 </joint>
 <link name='right_wheel_1'>
-	<pose>1.79660 -1.04 0.48924 0 0 0</pose>
+	<pose>1.6 -0.9 0.391 0 0 0</pose>
 	<inertial>
 		<pose>0 0 0 0 0 0</pose>
 		<mass>80</mass>
 		<inertia>
-			<ixx>15</ixx>
+			<ixx>5.9</ixx>
 			<ixy>0</ixy>
 			<ixz>0</ixz>
-			<iyy>30</iyy>
+			<iyy>9.88</iyy>
 			<iyz>0</iyz>
-			<izz>15</izz>
+			<izz>5.9</izz>
 		</inertia>
 	</inertial>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.07</length>
-				<radius>0.497</radius>
+				<length>0.1</length>
+				<radius>0.388</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 		<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.15</length>
-				<radius>0.495</radius>
+				<length>0.2</length>
+				<radius>0.387</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.3</length>
-				<radius>0.49</radius>
+				<length>0.24</length>
+				<radius>0.385</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.381</length>
-				<radius>0.47</radius>
+				<length>0.254</length>
+				<radius>0.38</radius>
 			</cylinder>
 		</geometry>
 	</collision>
@@ -190,7 +190,7 @@
 		<pose>0 0 0 0 0 0</pose>
 		<geometry>
 			<mesh>
-				<uri>model://../Assets/colorado_right_wheel.dae</uri>
+				<uri>model://../Assets/colorado_wheel.dae</uri>
 			</mesh>
 		</geometry>
 	</visual>
@@ -205,52 +205,52 @@
 	</axis>
 </joint>
 <link name='right_wheel_2'>
-	<pose>-1.79660 -1.04 0.48924 0 0 0</pose>
+	<pose>-1.6 -0.9 0.391 0 0 0</pose>
 	<inertial>
 		<pose>0 0 0 0 0 0</pose>
 		<mass>80</mass>
 		<inertia>
-			<ixx>15</ixx>
+			<ixx>5.9</ixx>
 			<ixy>0</ixy>
 			<ixz>0</ixz>
-			<iyy>30</iyy>
+			<iyy>9.88</iyy>
 			<iyz>0</iyz>
-			<izz>15</izz>
+			<izz>5.9</izz>
 		</inertia>
 	</inertial>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.07</length>
-				<radius>0.497</radius>
+				<length>0.1</length>
+				<radius>0.388</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 		<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.15</length>
-				<radius>0.495</radius>
+				<length>0.2</length>
+				<radius>0.387</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.3</length>
-				<radius>0.49</radius>
+				<length>0.24</length>
+				<radius>0.385</radius>
 			</cylinder>
 		</geometry>
 	</collision>
 	<collision name='wheel_col'>
-		<pose>0 0.0571 0 1.57079633 0 0</pose>
+		<pose>0 0 0 1.57079633 0 0</pose>
 		<geometry>
 			<cylinder>
-				<length>0.381</length>
-				<radius>0.47</radius>
+				<length>0.254</length>
+				<radius>0.38</radius>
 			</cylinder>
 		</geometry>
 	</collision>
@@ -258,7 +258,7 @@
 		<pose>0 0 0 0 0 0</pose>
 		<geometry>
 			<mesh>
-				<uri>model://../Assets/colorado_right_wheel.dae</uri>
+				<uri>model://../Assets/colorado_wheel.dae</uri>
 			</mesh>
 		</geometry>
 	</visual>

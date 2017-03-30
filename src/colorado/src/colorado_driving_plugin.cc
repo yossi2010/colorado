@@ -1,12 +1,10 @@
-// Written By : Daniel Meltz
+// Written By : Yossi Cohen
 #define MY_GAZEBO_VER 5
 // If the plugin is not defined then define it
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <random>
-
-
 // Gazebo Libraries
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
@@ -16,367 +14,441 @@
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/math/gzmath.hh>
 #include <gazebo/gazebo_config.h>
-
-
 // ROS Communication
 #include "ros/ros.h"
 #include "std_msgs/Float64.h"
 #include "std_msgs/Bool.h"
-
 // Boost Thread Mutex
 #include <boost/thread/mutex.hpp>
-
 // Dynamic Configuration
 #include <dynamic_reconfigure/server.h>
 #include <colorado/coloradoConfig.h>
 #include <boost/bind.hpp> // Boost Bind
 
+#include <tf/transform_broadcaster.h>
 
-
-// Maximum time delays
+// Maximum time delay before a "no command" behaviour is initiated.
 #define command_MAX_DELAY 0.3
 
-#define WHEEL_EFFORT_LIMIT 100000
-
-#define WHEELS_BASE 2.2
-#define STEERING_FRICTION_COMPENSATION 2; // compensate the the daliure of reaching the angular velosity
-
-#define WHEEL_DIAMETER 1.56
 #define PI 3.14159265359
-
-#define LINEAR_COMMAND_FILTER_ARRY_SIZE 750
-#define ANGULAR_COMMAND_FILTER_ARRY_SIZE 500
-#define EnginePower 1000
+#define VehicleLength 3.5932
+#define VehicleWidth 1.966
+#define WheelRadius 0.497
+#define HP 190 //190 HP @3400 rpm=142KW @3400 rpm & 515 NM @1300
+#define POWER 142
+#define TRANSMISSIONS 4
+#define IDLE_RPM 550
 //#define MY_GAZEBO_VER 5
 
 namespace gazebo
 {
-  
-  class coloradoDrivingPlugin : public ModelPlugin
+
+class coloradoDrivingPlugin : public ModelPlugin
+{
+  double deltaSimTime = 0.001;
+  ///  Constructor
+public:
+  coloradoDrivingPlugin() {}
+
+  /// The load function is called by Gazebo when the plugin is inserted into simulation
+  /// \param[in] _model A pointer to the model that this plugin is attached to.
+  /// \param[in] _sdf A pointer to the plugin's SDF element.
+public:
+  void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/) // we are not using the pointer to the sdf file so its commanted as an option
   {
-    ///  Constructor
-    public: coloradoDrivingPlugin() {}
+    std::cout << "My major GAZEBO VER = [" << GAZEBO_MAJOR_VERSION << "]" << std::endl;
+    this->model = _model;
+    // Store the pointers to the joints
+    this->left_wheel_1 = this->model->GetJoint("left_wheel_1");
+    this->left_wheel_2 = this->model->GetJoint("left_wheel_2");
+    this->right_wheel_1 = this->model->GetJoint("right_wheel_1");
+    this->right_wheel_2 = this->model->GetJoint("right_wheel_2");
+    this->streer_joint_left_1 = this->model->GetJoint("steering_joint_left_1");
+    this->streer_joint_right_1 = this->model->GetJoint("steering_joint_right_1");
+    this->spring_left_1 = this->model->GetJoint("spring_left_1");
+    this->spring_right_1 = this->model->GetJoint("spring_right_1");
+    this->spring_left_2 = this->model->GetJoint("spring_left_2");
+    this->spring_right_2 = this->model->GetJoint("spring_right_2");
 
-    /// The load function is called by Gazebo when the plugin is inserted into simulation
-    /// \param[in] _model A pointer to the model that this plugin is attached to.
-    /// \param[in] _sdf A pointer to the plugin's SDF element.
-  public: void Load(physics::ModelPtr _model, sdf::ElementPtr /*_sdf*/) // we are not using the pointer to the sdf file so its commanted as an option
+    // Starting Timers
+    Throttle_command_timer.Start();
+    Angular_command_timer.Start();
+    Breaking_command_timer.Start();
+    this->Ros_nh = new ros::NodeHandle("coloradoDrivingPlugin_node");
+
+    // Subscribe to the topic, and register a callback
+    Steering_rate_sub = this->Ros_nh->subscribe("/colorado/Driving/Steering", 60, &coloradoDrivingPlugin::On_Steering_command, this);
+    Velocity_rate_sub = this->Ros_nh->subscribe("/colorado/Driving/Throttle", 60, &coloradoDrivingPlugin::On_Throttle_command, this);
+    Breaking_sub = this->Ros_nh->subscribe("/colorado/Driving/Break", 60, &coloradoDrivingPlugin::On_Break_command, this);
+
+    platform_hb_pub_ = this->Ros_nh->advertise<std_msgs::Bool>("/colorado/ConnctionStatus", 60);
+    platform_Speedometer_pub = this->Ros_nh->advertise<std_msgs::Float64>("/colorado/Speedometer", 60);
+
+    // Listen to the update event. This event is broadcast every simulation iteration.
+    this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&coloradoDrivingPlugin::OnUpdate, this, _1));
+    std::cout << "Setting up dynamic config" << std::endl;
+
+    this->model_reconfiguration_server = new dynamic_reconfigure::Server<colorado::coloradoConfig>(*(this->Ros_nh));
+    this->model_reconfiguration_server->setCallback(boost::bind(&coloradoDrivingPlugin::dynamic_Reconfiguration_callback, this, _1, _2));
+    std::cout << "Dynamic configuration is set up" << std::endl;
+    Steering_Request = 0;
+    Throttle_command = 0;
+    std::cout << "Driving Plugin Loaded" << std::endl;
+  }
+
+public:
+  void dynamic_Reconfiguration_callback(colorado::coloradoConfig &config, uint32_t level)
+  {
+    control_P = config.Steer_control_P;
+    control_I = config.Steer_control_I;
+    control_D = config.Steer_control_D;
+    steeringSpeed = config.Steering;
+    damping = config.Damping;
+    friction = config.Friction;
+    power = config.Power;
+    suspenSpring = config.Spring;
+    SuspenDamp = config.Damper;
+    SuspenTarget = config.Target;
+  }
+
+  // Called by the world update start event, This function is the event that will be called every update
+public:
+  void OnUpdate(const common::UpdateInfo &simInfo) // we are not using the pointer to the info so its commanted as an option
+  {
+
+    deltaSimTime = simInfo.simTime.Double() - simTime.Double();
+    simTime = simInfo.simTime;
+    // std::cout << "update function started"<<std::endl;
+    // std::cout << "command_timer = " << command_timer.GetElapsed().Float() << std::endl;
+    // Applying effort to the wheels , brakes if no message income
+    if (Throttle_command_timer.GetElapsed().Float() > command_MAX_DELAY)
     {
-      //std::cout << "GAZEBO_VERSION = [" << GAZEBO_VERSION << "]"<<std::endl; 
-      //float gazebo_ver = std::stof(GAZEBO_VERSION);
-      std::cout << "My major GAZEBO VER = [" << GAZEBO_MAJOR_VERSION  << "]"<<std::endl; 
-      //if (GAZEBO_MAJOR_VERSION > 2.0) std::cout << "GADOL"<<std::endl;c 
-      //else std::cout << "NOT GADOL"<<std::endl; 
-      // Store the pointer to the model
-      this->model = _model;
-
-      // Store the pointers to the joints
-      this->left_wheel_1 = this->model->GetJoint("left_wheel_1");
-      this->left_wheel_2 = this->model->GetJoint("left_wheel_2");
-      this->right_wheel_1 = this->model->GetJoint("right_wheel_1");
-      this->right_wheel_2 = this->model->GetJoint("right_wheel_2");
-      this->streer_joint_left_1 = this->model->GetJoint("steering_joint_left_1");
-      this->streer_joint_right_1 = this->model->GetJoint("steering_joint_right_1");
-      this->spring_left_1 = this->model->GetJoint("spring_left_1");
-      this->spring_right_1 = this->model->GetJoint("spring_right_1");
-      this->spring_left_2 = this->model->GetJoint("spring_left_2");
-      this->spring_right_2 = this->model->GetJoint("spring_right_2");
-
-      
-      // Starting Timers
-      Linear_command_timer.Start();
-      Angular_command_timer.Start();
-      Breaking_command_timer.Start();
-      this->Ros_nh = new ros::NodeHandle("coloradoDrivingPlugin_node");
-
-      // Subscribe to the topic, and register a callback
-      Steering_rate_sub = this->Ros_nh->subscribe("/colorado/Driving/Steering" , 100, &coloradoDrivingPlugin::On_Angular_command, this);
-      Velocity_rate_sub = this->Ros_nh->subscribe("/colorado/Driving/Throttle" , 100, &coloradoDrivingPlugin::On_Linear_command, this);
-            Breaking_sub = this->Ros_nh->subscribe("/colorado/Driving/Break" , 100, &coloradoDrivingPlugin::On_Break_command, this);
-      
-      platform_hb_pub_ = this->Ros_nh->advertise<std_msgs::Bool>("/Sahar/link_with_platform" , 100);
-
-      // Listen to the update event. This event is broadcast every simulation iteration. 
-      this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&coloradoDrivingPlugin::OnUpdate, this, _1));
-      std::cout << "Setting up dynamic config"<<std::endl;
-
-      this->model_reconfiguration_server = new dynamic_reconfigure::Server<colorado::coloradoConfig> (*(this->Ros_nh));
-      this->model_reconfiguration_server->setCallback(boost::bind(&coloradoDrivingPlugin::dynamic_Reconfiguration_callback, this, _1, _2));
-      std::cout << "dynamic configuration is set up"<<std::endl;
-      /* initialize random seed: */
-      // srand (time(NULL));
-      // this->Linear_Noise_dist = new std::normal_distribution<double>(0,1);
-      // this->Angular_Noise_dist = new std::normal_distribution<double>(0,1);
+      // Applies 0 throtle
+      Throttle_command = 0;
+    }
+    if (Breaking_command_timer.GetElapsed().Float() > command_MAX_DELAY)
+    {
+      // Brakes
+      BreakPedal = 1;
+    }
+    if (Angular_command_timer.GetElapsed().Float() > command_MAX_DELAY)
+    {
+      // Restores straight direction.
       Steering_Request = 0;
-      Linear_command = 0;
-      std::cout << "Driving Plugin Loaded"<<std::endl; 
-      }
-
-    public: void dynamic_Reconfiguration_callback(colorado::coloradoConfig &config, uint32_t level)
-      {
-          control_P = config.Steer_control_P;
-          control_I = config.Steer_control_I;
-          control_D = config.Steer_control_D;
-
-          Steering_multiplier=config.Steering;
-          damping=config.Damping;
-          power=config.Power;
-
-          suspenSpring=config.Spring;
-          SuspenDamp=config.Damper;
-          SuspenTarget=config.Target;
-
-          command_lN = config.Command_Linear_Noise;
-          command_aN = config.Command_Angular_Noise;
-      }
-
-    // Called by the world update start event, This function is the event that will be called every update
-    public: void OnUpdate(const common::UpdateInfo & /*_info*/)  // we are not using the pointer to the info so its commanted as an option
-    {
-          // std::cout << "update function started"<<std::endl; 
-           // std::cout << "command_timer = " << command_timer.GetElapsed().Float() << std::endl;
-
-            // Applying effort to the wheels , brakes if no message income
-            if (Linear_command_timer.GetElapsed().Float()> command_MAX_DELAY)
-            {
-                // Brakes
-                   Linear_command = 0;
-            }
-            if (Breaking_command_timer.GetElapsed().Float()> command_MAX_DELAY)
-            {
-                // Brakes
-                   Break = 1;
-            }
-            if (Angular_command_timer.GetElapsed().Float()> command_MAX_DELAY)
-            {
-                // Brakes
-                   Steering_Request = 0;
-            }
-            // std::cout << "Applying efforts"<<std::endl; 
-            
-              apply_efforts();
-              ApplySuspension();
-              breaker(Break);
-
-              std::cout << this->spring_right_1->GetAngle(0).Radian()<<std::endl;
-              std_msgs::Bool connection;
-              connection.data = true;
-              platform_hb_pub_.publish(connection);
     }
-    double WheelThrottle=0;
-    double DesiredAngle=0;
-    private: void wheel_controller(physics::JointPtr wheel_joint, double Throttle)
-    {    
-        WheelThrottle=WheelThrottle+0.001*(Throttle-WheelThrottle);
-        
-        double wheel_omega = wheel_joint->GetVelocity(0);
-        double effort_command = power*WheelThrottle - damping*wheel_omega;
-      
-                wheel_joint->SetForce(0,effort_command);       
-    }
-    private: void steer_controller(physics::JointPtr steer_joint, double Angle)
+    // std::cout << "Applying efforts"<<std::endl;
+
+    EngineCalculations();
+    apply_efforts();
+    apply_steering();
+    ApplySuspension();
+    breaker();
+
+    // std::cout << this->spring_right_1->GetAngle(0).Radian() << std::endl;
+    SpeedMsg.data = Speed * 3.6;
+    platform_Speedometer_pub.publish(SpeedMsg);
+    connection.data = true;
+    platform_hb_pub_.publish(connection);
+    tf::Transform transform;
+	  transform.setOrigin( tf::Vector3(model->GetWorldPose().pos.x, model->GetWorldPose().pos.y, model->GetWorldPose().pos.z) );
+	  transform.setRotation(tf::Quaternion(model->GetWorldPose().rot.x,model->GetWorldPose().rot.y,model->GetWorldPose().rot.z,model->GetWorldPose().rot.w));
+
+	  TF_Broadcast(transform, "WORLD", model->GetName(), simInfo.simTime);
+
+  }
+  	void TF_Broadcast(tf::Transform transform, std::string frame_id, std::string child_frame_id, common::Time time)
+	{
+		 static tf::TransformBroadcaster br;
+		 tf::StampedTransform st(transform, ros::Time::now()/*(time.sec, time.nsec)*/, frame_id, child_frame_id);
+		 br.sendTransform(st);
+
+	}
+  void EngineCalculations()
+  {
+    ThrottlePedal = ThrottlePedal + deltaSimTime * 5 * (Throttle_command - ThrottlePedal); //move the gas pedal smoothly
+    if (Throttle_command < 0 && Speed > 5)
+      ThrottlePedal = 0;
+    CurrentRPM = fabs(Speed) * GearRatio[CurrentGear] * 3.1 / (WheelRadius * 2 * PI / 60) + IDLE_RPM; //Calculating RPM from wheel speed. 3.1 being the Final Drive Gear ratio.
+    if (CurrentGear < TRANSMISSIONS && Speed * 3.6 > ShiftSpeed[CurrentGear]) //simulating Torque drop in transmission
     {
-        // std::cout << " getting angle"<< std::endl;
-        if(steer_joint)
-        {
-          DesiredAngle=DesiredAngle+Steering_multiplier*(Angle-DesiredAngle);
-          double wheel_angle = steer_joint->GetAngle(0).Radian();
-          double steer_omega = steer_joint->GetVelocity(0);
-          double effort_command = control_P*(0.6*DesiredAngle - wheel_angle)-control_D*(steer_omega);
-          steer_joint->SetForce(0,effort_command); 
-          //  std::cout << wheel_angle<< std::endl;
-        }
-          else
-          std::cout << "Null Exception! \n";
-        // std::cout << "efforting"<< std::endl;
-        // this->jointController->SetJointPosition(steer_joint, Angle*0.61);
-
+      CurrentGear++;
+      ShiftTime = simTime.Double() + 0.25;
     }
-
-
-
-  private: void apply_efforts()
+    else if (CurrentGear > 1 && Speed * 3.6 < ShiftSpeed[CurrentGear - 1] - 10) //simulating Torque drop in transmission
     {
-        float WheelTorque = Linear_command*EnginePower;
-        // std::cout << " Controlling wheels"<< std::endl;
-        wheel_controller(this->left_wheel_1 , WheelTorque);
-        wheel_controller(this->left_wheel_2 , WheelTorque);
-
-        wheel_controller(this->right_wheel_1, WheelTorque);
-        wheel_controller(this->right_wheel_2, WheelTorque);
-        // std::cout << " Controlling Steering"<< std::endl;
-        steer_controller(this->streer_joint_left_1, Steering_Request);
-        steer_controller(this->streer_joint_right_1, Steering_Request);
-        // std::cout << " Finished applying efforts"<< std::endl;
+      CurrentGear--;
+      ShiftTime = simTime.Double() + 0.25;
     }
-    private: void breaker(int breaking)
-    {
-      
-        // std::cout << " getting angle"<< std::endl;
-        if(breaking>=0.09&&!Breaks)
-        {
-          TempDamping=damping;
-          damping=10000*Break*Break;
-          Breaks=true;
-          // std::cout << "Break on "<<damping<<std::endl; 
-        }
-          else if(breaking==0&&Breaks)
-          {
-            damping=TempDamping;
-            Breaks=false;
-            // std::cout << "Breaks off "<<damping<<std::endl; 
-          }
-          if(breaking>=0.09&&Breaks) damping=1000*Break*Break;
-         
-        // std::cout << "efforting"<< std::endl;
-        // this->jointController->SetJointPosition(steer_joint, Angle*0.61);
+    int indexRPM = ((int)CurrentRPM) / 600;
+    double interpolatedEngineTorque = 400 + 0.1620123 * CurrentRPM - 0.00005657748 * CurrentRPM * CurrentRPM; //An extracted function from the TorqueRPM600 array
+    // double interpolatedEngineTorque=(TorqueRPM600[indexRPM]+TorqueRPM600[indexRPM+1]*fmod(CurrentRPM,600)/600)/(1+fmod(CurrentRPM,600)/600); Deprecated interpolation code
+    Torque = ThrottlePedal * interpolatedEngineTorque * GearRatio[CurrentGear] * power;
+    if (simTime < ShiftTime)  //simulating Torque drop in transmission
+      Torque *= 0.5;
+    EngineLoad = Torque;
+    // std::cout << CurrentRPM << " RPM at Gear " << CurrentGear << " Speed " << Speed * 3.6 << " Engine Torque " << EngineLoad << std::endl;
+  }
+  void apply_efforts()
+  {
+    double WheelTorque = Torque;
+    // std::cout << " Controlling wheels"<< std::endl;
+    wheel_controller(this->left_wheel_1, WheelTorque);
+    wheel_controller(this->left_wheel_2, WheelTorque);
+    wheel_controller(this->right_wheel_1, WheelTorque);
+    wheel_controller(this->right_wheel_2, WheelTorque);
+    // std::cout << " Controlling Steering"<< std::endl;
+  }
+  void wheel_controller(physics::JointPtr wheelJoint, double Torque2)
+  {
+    WheelPower = Torque2;
 
+    double wheelOmega = wheelJoint->GetVelocity(0);
+    if (abs(wheelOmega > 1))
+      jointforce = WheelPower - damping * wheelOmega - friction * wheelOmega / fabs(wheelOmega);
+    else
+      jointforce = WheelPower - damping * wheelOmega;
+    wheelJoint->SetForce(0, jointforce);
+    if (wheelJoint == right_wheel_2)
+    {
+      wheelsSpeedSum = wheelsSpeedSum + wheelOmega;
+      Speed = wheelsSpeedSum * WheelRadius / 4;
+      wheelsSpeedSum = 0;
+    }
+    else
+      wheelsSpeedSum = wheelsSpeedSum + wheelOmega;
+  }
+  void apply_steering()
+  {
+    double ThetaAckerman = 0;
+    double ThetaOuter = 0;
+    if (Steering_Request > 0) //turning right
+    {
+      ThetaAckerman = atan(1 / ((1 / (tan(Steering_Request)) + (VehicleWidth / VehicleLength))));
+      steer_controller(this->streer_joint_left_1, Steering_Request);
+      steer_controller(this->streer_joint_right_1, ThetaAckerman);
+    }
+    else if (Steering_Request < 0) //turning left
+    {
+      ThetaAckerman = atan(1 / ((1 / (tan(-Steering_Request)) + (VehicleWidth / VehicleLength))));
+      steer_controller(this->streer_joint_left_1, -ThetaAckerman);
+      steer_controller(this->streer_joint_right_1, Steering_Request);
+    }
+    else
+    {
+      steer_controller(this->streer_joint_left_1, 0);
+      steer_controller(this->streer_joint_right_1, 0);
     }
 
-    private: void On_Break_command(const std_msgs::Float64ConstPtr &msg)
+    //  std::cout << ThetaAckerman << std::endl;
+  }
+  void steer_controller(physics::JointPtr steer_joint, double Angle)
+  {
+    // std::cout << " getting angle"<< std::endl;
+    double currentWheelAngle = steer_joint->GetAngle(0).Radian();
+    double steeringOmega = steer_joint->GetVelocity(0);
+    if (steer_joint == this->streer_joint_left_1)
     {
-     Breaking_command_mutex.lock();
-          // Recieving referance velocity
-          if(msg->data >= 1) Break = 1;
-           else if(msg->data >= 0.09) Break = msg->data;
-          else                     Break = 0;
-          
+      DesiredAngle = DesiredAngle + steeringSpeed * deltaSimTime * (Angle - DesiredAngle);
+      if (fabs(Angle - DesiredAngle)<0.01)DesiredAngle=Angle;
+      IerL+=DesiredAngleR - currentWheelAngle;
+      double jointforce = control_P * (DesiredAngle - currentWheelAngle)+control_I*IerL - control_D * (steeringOmega);
+      steer_joint->SetForce(0, jointforce);
+      //  std::cout << currentWheelAngle<< std::endl;
+    }
+    else
+    {
+      DesiredAngleR = DesiredAngleR + steeringSpeed * deltaSimTime * (Angle - DesiredAngleR);
+      if (fabs(Angle - DesiredAngleR)<0.01)DesiredAngleR=Angle;
+      IerR+=DesiredAngleR - currentWheelAngle;
+      double jointforce = control_P * (DesiredAngleR - currentWheelAngle)+control_I*IerR - control_D * (steeringOmega);
+      steer_joint->SetForce(0, jointforce);
+    }
+    // std::cout << "efforting"<< std::endl;
+    // this->jointController->SetJointPosition(steer_joint, Angle*0.61);
+  }
+  void breaker()
+  {
 
+    // std::cout << " getting angle"<< std::endl;
+    if (BreakPedal >= 0.09 && !Breaks)
+    {
+      TempDamping = damping;
+      damping = 10000 * BreakPedal * BreakPedal;
+      Breaks = true;
+      std::cout << "Break on " << damping << std::endl;
+    }
+    else if (BreakPedal == 0 && Breaks)
+    {
+      damping = TempDamping;
+      Breaks = false;
+      std::cout << "Breaks off " << damping << std::endl;
+    }
+    if (BreakPedal >= 0.09 && Breaks)
+      damping = 10000 * BreakPedal * BreakPedal;
 
-        // Reseting timer every message
+    // std::cout << "efforting"<< std::endl;
+    // this->jointController->SetJointPosition(steer_joint, Angle*0.61);
+  }
+  void ApplySuspension()
+  {
+    Suspension(spring_left_1);
+    Suspension(spring_left_2);
+    Suspension(spring_right_1);
+    Suspension(spring_right_2);
+  }
+  void Suspension(physics::JointPtr Suspension)
+  { //The function to control the suspension of the Vehicle
+    double SpringForce = -(Suspension->GetAngle(0).Radian() + SuspenTarget) * suspenSpring - Suspension->GetVelocity(0) * SuspenDamp;
+    Suspension->SetForce(0, SpringForce);
+  }
+
+  // The subscriber callback , each time data is published to the subscriber this function is being called and recieves the data in pointer msg
+  void On_Throttle_command(const std_msgs::Float64ConstPtr &msg)
+  {
+
+    Throttle_command_mutex.lock();
+    // Recieving referance velocity
+    if (msg->data > 1)
+    {
+      Throttle_command = 1;
+    }
+    else if (msg->data < -1)
+    {
+      Throttle_command = -1;
+    }
+    else
+    {
+      Throttle_command = msg->data;
+    }
+
+// Reseting timer every time LLC publishes message
 #if GAZEBO_MAJOR_VERSION >= 5
-           Breaking_command_timer.Reset();
+    Throttle_command_timer.Reset();
 #endif
-           Breaking_command_timer.Start();
+    Throttle_command_timer.Start();
 
-      Breaking_command_mutex.unlock();
-    }
-    // The subscriber callback , each time data is published to the subscriber this function is being called and recieves the data in pointer msg
-    private: void On_Angular_command(const std_msgs::Float64ConstPtr &msg)
+    Throttle_command_mutex.unlock();
+  }
+  // The subscriber callback , each time data is published to the subscriber this function is being called and recieves the data in pointer msg
+  void On_Steering_command(const std_msgs::Float64ConstPtr &msg)
+  {
+    Angular_command_mutex.lock();
+    // Recieving referance steering angle
+    if (msg->data > 1)
     {
-      Angular_command_mutex.lock();
-          // Recieving referance steering angle  
-          if(msg->data > 1)       { Steering_Request =  1;          }
-          else if(msg->data < -1) { Steering_Request = -1;          }
-          else                    { Steering_Request = msg->data;   }
-
-        // Reseting timer every time LLC publishes message
-#if GAZEBO_MAJOR_VERSION >= 5 
-           Angular_command_timer.Reset();
-#endif
-           Angular_command_timer.Start();
-
-
-      Angular_command_mutex.unlock();
+      Steering_Request = 1;
     }
-    
-    private: void ApplySuspension()
+    else if (msg->data < -1)
     {
-      Suspension(spring_left_1);
-      Suspension(spring_left_2);
-      Suspension(spring_right_1);
-      Suspension(spring_right_2);
+      Steering_Request = -1;
     }
-    private: void Suspension(physics::JointPtr Suspension)
+    else
     {
-      double Force = -(Suspension->GetAngle(0).Radian()+SuspenTarget)*suspenSpring - Suspension->GetVelocity(0)*SuspenDamp;
-            Suspension->SetForce(0, Force);
+      Steering_Request = msg->data;
     }
+    Steering_Request = -Steering_Request;
 
-
-    // The subscriber callback , each time data is published to the subscriber this function is being called and recieves the data in pointer msg
-    private: void On_Linear_command(const std_msgs::Float64ConstPtr &msg)
-    {
-      
-      Linear_command_mutex.lock();
-          // Recieving referance velocity
-          if(msg->data > 1)       { Linear_command =  1;          }
-          else if(msg->data < -1) { Linear_command = -1;          }
-          else                    { Linear_command = msg->data;   }
-
-        // Reseting timer every time LLC publishes message
+// Reseting timer every time LLC publishes message
 #if GAZEBO_MAJOR_VERSION >= 5
-           Linear_command_timer.Reset();
+    Angular_command_timer.Reset();
 #endif
-           Linear_command_timer.Start();
+    Angular_command_timer.Start();
+    Angular_command_mutex.unlock();
+  }
+  void On_Break_command(const std_msgs::Float64ConstPtr &msg)
+  {
+    Breaking_command_mutex.lock();
+    // Recieving referance velocity
+    if (msg->data >= 1)
+      BreakPedal = 1;
+    else if (msg->data >= 0.09)
+      BreakPedal = msg->data;
+    else
+      BreakPedal = 0;
 
-      Linear_command_mutex.unlock();
-    }
+// Reseting timer every message
+#if GAZEBO_MAJOR_VERSION >= 5
+    Breaking_command_timer.Reset();
+#endif
+    Breaking_command_timer.Start();
+    Breaking_command_mutex.unlock();
+  }
 
+  // Defining private Pointer to model
+  physics::ModelPtr model;
 
+  // Defining private Pointer to joints
 
+  physics::JointPtr right_wheel_1;
+  physics::JointPtr right_wheel_2;
+  physics::JointPtr left_wheel_1;
+  physics::JointPtr left_wheel_2;
+  physics::JointPtr streer_joint_left_1;
+  physics::JointPtr streer_joint_right_1;
+  physics::JointPtr spring_left_1;
+  physics::JointPtr spring_right_1;
+  physics::JointPtr spring_left_2;
+  physics::JointPtr spring_right_2;
 
-     private: float gazebo_ver;
+  // Defining private Pointer to the update event connection
+  event::ConnectionPtr updateConnection;
 
-     // Defining private Pointer to model
-     private: physics::ModelPtr model;
+  // Defining private Ros Node Handle
+  ros::NodeHandle *Ros_nh;
 
-      // Defining private Pointer to joints
+  // Defining private Ros Subscribers
+  ros::Subscriber Steering_rate_sub;
+  ros::Subscriber Velocity_rate_sub;
+  ros::Subscriber Breaking_sub;
+  // Defining private Ros Publishers
+  ros::Publisher platform_hb_pub_;
+  ros::Publisher platform_Speedometer_pub;
+  std_msgs::Bool connection;
+  std_msgs::Float64 SpeedMsg;
 
-     private: physics::JointPtr right_wheel_1;
-     private: physics::JointPtr right_wheel_2;
-     private: physics::JointPtr left_wheel_1;
-     private: physics::JointPtr left_wheel_2;
-     private: physics::JointPtr streer_joint_left_1;
-     private: physics::JointPtr streer_joint_right_1;
-     private: physics::JointPtr spring_left_1 ;
-     private: physics::JointPtr spring_right_1;
-     private: physics::JointPtr spring_left_2 ;
-     private: physics::JointPtr spring_right_2;
+  // Defining private Timers
+  common::Timer Throttle_command_timer;
+  common::Timer Angular_command_timer;
+  common::Timer Breaking_command_timer;
+  common::Time simTime;
 
+  // Defining private Mutex
+  boost::mutex Angular_command_mutex;
+  boost::mutex Throttle_command_mutex;
+  boost::mutex Breaking_command_mutex;
+  //helper vars
+  float Throttle_command = 0;
+  float ThrottlePedal = 0;
+  float Steering_Request = 0;
+  float BreakPedal = 1;
+  double friction = 0;
+  double WheelPower = 0;
+  double DesiredAngle = 0;
+  double DesiredAngleR = 0;
+  double wheelsSpeedSum = 0;
+  double CurrentRPM = 0;
+  double ShiftTime = 0;
+  double EngineLoad = 0;
+  int CurrentGear = 1;
+  double Torque = 0;
+  double jointforce = 0;
+  float tempTime = 0;
+  float Speed = 0;
+  bool Breaks = false;
+  double IerL=0;
+  double IerR=0;
+  double ShiftSpeed[TRANSMISSIONS] = {0, 20, 40, 65};
+  double GearRatio[TRANSMISSIONS + 1] = {0, 3.2, 2.5, 1.5, 0.8};
+  double TorqueRPM600[8] = {0, 350, 515, 500, 450, 300, 200, 200};
+  double PowerRPM600[8] = {0, 10, 60, 80, 120, 142, 120, 120};
+  //Dynamic Configuration Definitions
+  dynamic_reconfigure::Server<colorado::coloradoConfig> *model_reconfiguration_server;
+  double control_P, control_I, control_D, steeringSpeed,
+      damping, power, TempDamping, suspenSpring, SuspenDamp, SuspenTarget;
+};
 
-
-      // Defining private Pointer to the update event connection
-     private: event::ConnectionPtr updateConnection;
-
-     // Defining private Ros Node Handle
-     private: ros::NodeHandle  *Ros_nh;
-
-     // Defining private Ros Subscribers
-     private: ros::Subscriber Steering_rate_sub;
-     private: ros::Subscriber Velocity_rate_sub;
-     private: ros::Subscriber Breaking_sub;
-     // Defining private Ros Publishers
-     ros::Publisher platform_hb_pub_;
-
-
-     // Defining private Timers
-     private: common::Timer Linear_command_timer;
-     private: common::Timer Angular_command_timer;
-     private: common::Timer Breaking_command_timer;
-
-
-     // Defining private Mutex
-     private: boost::mutex Angular_command_mutex;
-     private: boost::mutex Linear_command_mutex;
-     private: boost::mutex Breaking_command_mutex;
-     private: float Linear_command;
-     private: float Steering_Request;
-     private: int Break=1;
-     private: double Linear_ref_vel;
-     private: double Angular_ref_vel;
-
-     private: bool Breaks=false;
-
-     private: double Linear_command_array[LINEAR_COMMAND_FILTER_ARRY_SIZE];
-     private: double Angular_command_array[ANGULAR_COMMAND_FILTER_ARRY_SIZE];
-     private: double Linear_command_sum;
-     private: double Angular_command_sum;
-     private: int Linear_command_index;
-     private: int Angular_command_index;
-
-
-     private: dynamic_reconfigure::Server<colorado::coloradoConfig> *model_reconfiguration_server;
-     private: double control_P, control_I ,control_D,Steering_multiplier,damping,power, TempDamping,suspenSpring, SuspenDamp, SuspenTarget;		// PID constants
-     private: double command_lN, command_aN;   // command noise factors
-
-    //  std::default_random_engine generator;
-    //  std::normal_distribution<double> * Linear_Noise_dist;
-    //  std::normal_distribution<double> * Angular_Noise_dist;
-
-  };
-
-  // Tell Gazebo about this plugin, so that Gazebo can call Load on this plugin.
-  GZ_REGISTER_MODEL_PLUGIN(coloradoDrivingPlugin)
+// Tell Gazebo about this plugin, so that Gazebo can call Load on this plugin.
+GZ_REGISTER_MODEL_PLUGIN(coloradoDrivingPlugin)
 }
-
+// 4*(0.8654*50+0.65450*50+0.48924*50+0.48924*50)+0.48924*80*4-0.48924*50*2+2000 is 0.863347 which is the CoM height.
+// LeftRearWheelLoc = (1.79660 1.04 0.48924)
