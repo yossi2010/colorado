@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+    <model name="Testing_Grounds">
+        <static>true</static>
+        <link name="colorado_world">
+            <pose>0 0 0 0 0 0</pose>
+            <collision name="terrain1_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://colorado_world/meshes/colorado_world.dae</uri>
+                    </mesh>
+                </geometry>
+            </collision>
+            <visual name="terrain1_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://colorado_world/meshes/colorado_world.dae</uri>
+                    </mesh>
+                </geometry>
+        </link>
+    </model>
+</sdf>
