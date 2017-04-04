@@ -19,7 +19,7 @@
                 <pose>80 -60 60 0 0.5 2</pose>
             </camera>
         </gui>
-        <physics type="bullet">
+        <!-- <physics type="bullet">
             <gravity>0 0 -9.81</gravity>
             <max_step_size>0.001</max_step_size>
             <real_time_factor>1</real_time_factor>
@@ -37,7 +37,7 @@
                     <contact_surface_layer>0.001</contact_surface_layer>
                 </constraints>
             </bullet>
-        </physics>
+        </physics>-->
         <include>
             <uri>model://ground_plane</uri>
             <name>ground_plane</name>
