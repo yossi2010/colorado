@@ -6,6 +6,10 @@
 .cproject
 .project
 Makefile
+Unity\ project/Colorado/Library/*
+Unity\ project/Colorado/obj/*
+Unity\ project/Colorado/screenshots/*
+Unity\ project/Colorado/.vscode/*
 test_results/
 CTestTestfile.cmake
 CMakeCache.txt
@@ -13,6 +17,8 @@ cmake_install.cmake
 *~
 *.pyc
 install/*
+build/*
+devel/*
 src/CMakeLists.txt
 *.idea*
 .metadata/*
@@ -23,6 +29,6 @@ core
 *.user
 *.cbp
 *.autosave
-
+*.meta
 CATKIN_IGNORE
 

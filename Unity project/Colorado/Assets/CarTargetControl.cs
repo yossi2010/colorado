@@ -8,7 +8,7 @@ public class CarTargetControl : MonoBehaviour {
         private CarController m_Car; // the car controller we want to use
 		float Throttle=0;
 		Rigidbody rb;
-		public NavMeshAgent Navigator;
+		public navigation Navigator;
 		Transform myref;
 		public Transform Target;
         public float SteerSpeed = 0.1f,TargetSpeed=0,DesiredSpeed,TargetDistance=3;
@@ -32,11 +32,10 @@ public class CarTargetControl : MonoBehaviour {
 			// Debug.Log(Velocity);
 			TargetSpeed=DesiredSpeed+dist-TargetDistance;
 			Throttle=Mathf.Clamp((TargetDistance/3)*(TargetSpeed-Velocity),-0.05f,1);
-			Navigator.speed=Mathf.Clamp(DesiredSpeed-dist+TargetDistance,0,DesiredSpeed+3);
+			Navigator.Vel=Mathf.Clamp(DesiredSpeed-dist+TargetDistance,0,DesiredSpeed+3);
             // pass the input to the car!
 
             m_Car.Move(Steer, Throttle, Throttle, 0);
-
         }
     }
 }
