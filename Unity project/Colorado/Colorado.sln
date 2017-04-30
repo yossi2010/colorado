@@ -1,10 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{15E49475-E425-39FE-ED93-FC5CCE25D3CB}") = "Colorado", "Assembly-CSharp-firstpass.csproj", "{CC8F30F1-8FA9-A9E9-28AE-47F9627BEF90}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colorado", "Assembly-CSharp-firstpass.csproj", "{CC8F30F1-8FA9-A9E9-28AE-47F9627BEF90}"
 EndProject
-Project("{15E49475-E425-39FE-ED93-FC5CCE25D3CB}") = "Colorado", "Assembly-CSharp.csproj", "{6B9E2223-C225-A0BC-9D96-F5C0FEAA1E4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colorado", "Assembly-CSharp.csproj", "{6B9E2223-C225-A0BC-9D96-F5C0FEAA1E4D}"
 EndProject
-Project("{15E49475-E425-39FE-ED93-FC5CCE25D3CB}") = "Colorado", "Assembly-CSharp-Editor.csproj", "{19F4F9D1-B70E-8B9A-B2BE-94C869B3B55C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Colorado", "Assembly-CSharp-Editor.csproj", "{19F4F9D1-B70E-8B9A-B2BE-94C869B3B55C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
