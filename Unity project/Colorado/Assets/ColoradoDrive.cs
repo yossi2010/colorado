@@ -27,7 +27,11 @@ public class ColoradoDrive : MonoBehaviour
         xVel = myref.InverseTransformDirection(rb.velocity).z;
         steeringangle = -MaxSteer * Input.GetAxis("Horizontal");
         Throttle=Input.GetAxis("Vertical");
-        
+        Drive(Throttle,steeringangle);
+
+    }
+    public void Drive(float Throttle,float Steer)
+    {
         Torque = MaxTorque * Throttle;
         for (int i = 0; i < joints.Length; i++)
         {
@@ -36,17 +40,17 @@ public class ColoradoDrive : MonoBehaviour
             // joints[i].motor=tempmotor;
             joints[i].AddRelativeTorque(new Vector3(Torque, 0, 0), ForceMode.Force);
         }
-        if (steeringangle >= 0) //turning right
+        if (Steer >= 0) //turning right
         {
-            ThetaAckerman = Mathf.Atan(1 / ((1 / (Mathf.Tan(steeringangle)) + (VehicleWidth / VehicleLength))));
-            Theta[0] = steeringangle;
+            ThetaAckerman = Mathf.Atan(1 / ((1 / (Mathf.Tan(Steer)) + (VehicleWidth / VehicleLength))));
+            Theta[0] = Steer;
             Theta[1] = ThetaAckerman;
         }
-        else if (steeringangle < 0) //turning left
+        else if (Steer < 0) //turning left
         {
-            ThetaAckerman = Mathf.Atan(1 / ((1 / (Mathf.Tan(-steeringangle)) + (VehicleWidth / VehicleLength))));
+            ThetaAckerman = Mathf.Atan(1 / ((1 / (Mathf.Tan(-Steer)) + (VehicleWidth / VehicleLength))));
             Theta[0] = -ThetaAckerman;
-            Theta[1] = steeringangle;
+            Theta[1] = Steer;
         }
         for (int i = 0; i < steering.Length; i++)
         {
